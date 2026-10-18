@@ -1,0 +1,323 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>妈咪的天空</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one phone column measured on a 375pt artboard (1u = 1pt, scaled to the screen). Sky sits behind the hero; hours scroll sideways, days scroll down, city switch at the bottom. Single dark world by choice. */
+:root{
+  --bg:#000; --fg:#f4f6f8; --dim:rgba(244,246,248,.5); --mid:rgba(244,246,248,.72);
+  --rain:#4cc6ee; --seg:#1a1b1d; --seg-on:#000; --pill:#0b0c0e;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif;
+  --spring:cubic-bezier(.32,.72,0,1);
+  --u:clamp(.5px, min(calc(100vw / 375), calc(100vh / 790)), 1.2px);
+  color-scheme:dark;
+}
+@supports (height:100dvh){:root{--u:clamp(.5px, min(calc(100vw / 375), calc(100dvh / 790)), 1.2px)}}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing:antialiased}
+.app{position:relative;height:100%;max-width:calc(var(--u) * 400);margin:0 auto;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- header ---------- */
+header{text-align:center;padding-top:calc(var(--u)*22);display:grid;gap:calc(var(--u)*4);position:relative;z-index:2}
+h1{margin:0;font-size:calc(var(--u)*17);font-weight:500;letter-spacing:.04em}
+.local{font-size:calc(var(--u)*11.5);color:var(--dim);font-variant-numeric:tabular-nums}
+
+/* ---------- hero + sky ---------- */
+.hero{flex:1 1 auto;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding-bottom:calc(var(--u)*46);min-height:0}
+.hero .txt{position:relative;z-index:1;display:grid;justify-items:center}
+.l1{font-size:calc(var(--u)*30);font-weight:500;line-height:1.2;white-space:nowrap;font-variant-numeric:tabular-nums}
+.big{font-size:calc(var(--u)*76);font-weight:600;line-height:1.08;letter-spacing:-.01em;white-space:nowrap;font-variant-numeric:tabular-nums;
+  margin-top:calc(var(--u)*14)}
+.big .unit{font-weight:500;margin-left:.16em}
+.cond{font-size:calc(var(--u)*40);font-weight:600;line-height:1.2;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cond .pop{color:var(--rain)}
+
+.sky{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:0}
+.layer{position:absolute;left:0;top:0;opacity:0;transition:opacity .9s var(--spring)}
+.blob{position:absolute;border-radius:50%;transform:translate(-50%,-50%);
+  left:calc(var(--x) * var(--u));top:calc(var(--y) * var(--u));width:calc(var(--s) * var(--u));height:calc(var(--s) * var(--u));
+  animation:drift 13s ease-in-out infinite alternate}
+.sun .blob{--x:var(--sx,0);--y:var(--sy,-40);--s:250;
+  background:radial-gradient(circle,rgb(140,118,14) 0,rgba(128,108,12,.6) 30%,rgba(100,84,8,0) 62%);
+  transition:left .9s var(--spring),top .9s var(--spring);animation-duration:10s}
+.blue .blob{--x:0;--y:-34;--s:380;background:radial-gradient(circle,rgba(0,50,78,1) 0,rgba(0,40,64,.75) 36%,rgba(0,24,40,0) 66%)}
+.grey .blob{background:radial-gradient(circle,rgba(60,70,84,.95) 0,rgba(44,52,64,.6) 38%,rgba(30,36,44,0) 66%)}
+.grey .b1{--x:-36;--y:-40;--s:330}
+.grey .b2{--x:58;--y:6;--s:260;animation-delay:-6s}
+.moon .blob{--x:72;--y:-86;--s:170;background:radial-gradient(circle,rgba(226,228,202,.6) 0,rgba(180,186,170,.24) 32%,rgba(120,130,120,0) 62%)}
+.stars i{position:absolute;width:1.5px;height:1.5px;border-radius:50%;background:#fff;animation:tw 4s ease-in-out infinite alternate}
+.rain .field{position:absolute;left:calc(var(--u)*-14);top:calc(var(--u)*108);width:calc(var(--u)*300);height:calc(var(--u)*240);
+  transform:translate(-50%,-50%) rotate(20deg)}
+.rain .s{position:absolute;top:0;width:calc(var(--u)*11);height:calc(var(--u)*96);border-radius:99px;filter:blur(calc(var(--u)*4));
+  background:linear-gradient(to bottom,rgba(40,150,200,0),rgba(40,160,215,.55),rgba(40,150,200,0));animation:fall 2s linear infinite}
+@keyframes drift{from{transform:translate(-50%,-50%)}to{transform:translate(calc(-50% + 12px),calc(-50% - 10px)) scale(1.05)}}
+@keyframes fall{from{transform:translateY(calc(var(--u)*-110));opacity:0}25%{opacity:1}to{transform:translateY(calc(var(--u)*250));opacity:0}}
+@keyframes tw{from{opacity:.12}to{opacity:.7}}
+
+/* ---------- fixed text containers: content cross-dissolves in place ---------- */
+.line{display:grid;place-items:center}
+/* new content arrives fast (ease-out), old leaves late (ease-in): summed opacity never dips, so no flash */
+.line>.v{grid-area:1/1;white-space:nowrap;transition:opacity .28s cubic-bezier(0,0,.2,1)}
+.line>.v.enter{opacity:0}
+.line>.v.leave{opacity:0;transition:opacity .28s cubic-bezier(.8,0,1,1)}
+
+/* ---------- hours ---------- */
+.hours{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:25%;overflow-x:auto;scroll-snap-type:x mandatory;
+  scrollbar-width:none;padding-block:calc(var(--u)*14);z-index:1;flex:0 0 auto}
+.hours::-webkit-scrollbar{display:none}
+.h{scroll-snap-align:start;display:grid;justify-items:center;gap:calc(var(--u)*10);padding-block:calc(var(--u)*4);position:relative;z-index:1;cursor:pointer}
+.h .tag{position:absolute;top:calc(var(--u)*-12);font-size:calc(var(--u)*10);color:var(--dim);letter-spacing:.08em}
+.h .lb,.h .t{font-size:calc(var(--u)*19);font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.2}
+.ic{width:calc(var(--u)*24);height:calc(var(--u)*20);display:block}
+
+/* ---------- days ---------- */
+.days{height:calc(var(--u)*150);overflow-y:auto;scrollbar-width:none;scroll-snap-type:y proximity;margin-top:calc(var(--u)*30);flex:0 0 auto;z-index:1;
+}
+.days::-webkit-scrollbar{display:none}
+.dl{position:relative;display:grid;width:max-content;margin:0 auto;padding-bottom:calc(var(--u)*100)}
+.d{display:grid;grid-template-columns:auto calc(var(--u)*24) auto;align-items:center;column-gap:calc(var(--u)*26);
+  height:calc(var(--u)*50);scroll-snap-align:start;cursor:pointer;position:relative;z-index:1;padding-inline:calc(var(--u)*16)}
+.d .lb,.d .r{font-size:calc(var(--u)*19);font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+.d .r{margin-left:calc(var(--u)*-2)}
+.d:not(:first-child) .lb,.d:not(:first-child) .r{color:var(--mid)}
+
+/* ---------- peek state: the held item is untouched, everything else softens ---------- */
+.h,.d{transition:filter .45s var(--spring),opacity .45s var(--spring)}
+.app.peeking .h:not(.on),.app.peeking .d:not(.on){filter:blur(calc(var(--u)*6));opacity:.4}
+/* list fade lives on each row so a held row can come fully forward */
+.d>*{opacity:var(--fade,1);transition:opacity .45s var(--spring),color .45s var(--spring)}
+.days.scrolling .d>*{transition:none}
+.app.peeking .d.on>*{opacity:1}
+.app.peeking .d.on .lb,.app.peeking .d.on .r{color:var(--fg)}
+
+/* ---------- segmented city switch ---------- */
+.seg{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--seg);border-radius:999px;padding:calc(var(--u)*6);
+  margin:calc(var(--u)*14) calc(var(--u)*17) max(calc(var(--u)*22),env(safe-area-inset-bottom,0px));flex:0 0 auto;z-index:1}
+.seg .knob{position:absolute;left:calc(var(--u)*6);top:calc(var(--u)*6);bottom:calc(var(--u)*6);width:calc(50% - var(--u)*6);
+  background:var(--seg-on);border-radius:999px;transition:transform .55s var(--spring)}
+.seg[data-on="gm"] .knob{transform:translateX(100%)}
+.seg button{all:unset;position:relative;cursor:pointer;text-align:center;font-family:var(--sans);font-size:calc(var(--u)*18);font-weight:500;
+  color:var(--dim);height:calc(var(--u)*44);line-height:calc(var(--u)*44);border-radius:999px;transition:color .4s var(--spring)}
+.seg button[aria-pressed="true"]{color:var(--fg)}
+.seg button:focus-visible,.h:focus-visible,.d:focus-visible{outline:2px solid var(--rain);outline-offset:2px}
+.swapping .hours,.swapping .days{opacity:0;filter:blur(calc(var(--u)*4))}
+.hours,.days{transition:opacity .3s var(--spring),filter .3s var(--spring)}
+
+@media (prefers-reduced-motion:reduce){
+  .blob,.rain .s,.stars i{animation:none}
+  .g.in,.g.out{animation-duration:.01s}
+}
+</style>
+
+<div class="app" id="app">
+  <header>
+    <h1>妈咪的天空</h1>
+    <div class="local" id="local"></div>
+  </header>
+
+  <section class="hero" id="hero" aria-live="polite">
+    <div class="sky" aria-hidden="true">
+      <div class="layer sun"><div class="blob"></div></div>
+      <div class="layer grey"><div class="blob b1"></div><div class="blob b2"></div></div>
+      <div class="layer blue"><div class="blob"></div></div>
+      <div class="layer moon"><div class="blob"></div></div>
+      <div class="layer stars" id="stars"></div>
+      <div class="layer rain"><div class="field" id="rainfield"></div></div>
+    </div>
+    <div class="txt">
+      <div class="l1 line" id="l1"></div>
+      <div class="big line" id="big"></div>
+      <div class="cond line" id="cond"></div>
+    </div>
+  </section>
+
+  <div class="hours" id="hours" aria-label="逐小时"></div>
+  <div class="days" id="days" aria-label="未来七天"><div class="dl" id="dl"></div></div>
+
+  <nav class="seg" id="seg" data-on="st">
+    <span class="knob" aria-hidden="true"></span>
+    <button id="c-st" data-city="st" aria-pressed="true">汕头</button>
+    <button id="c-gm" data-city="gm" aria-pressed="false">格明德</button>
+  </nav>
+</div>
+
+<script>
+/* ---------- icons ---------- */
+const CL='M9 25h15.5a5.2 5.2 0 0 0 .7-10.35A7.3 7.3 0 0 0 11.1 13a5.9 5.9 0 0 0-2.1 12z';
+const sunG=(cx,cy,r)=>{let s=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#FFD43B"/>`;
+  for(let i=0;i<8;i++){const a=i*Math.PI/4,c=Math.cos(a),n=Math.sin(a);
+  s+=`<line x1="${(cx+c*(r+2.4)).toFixed(1)}" y1="${(cy+n*(r+2.4)).toFixed(1)}" x2="${(cx+c*(r+4.6)).toFixed(1)}" y2="${(cy+n*(r+4.6)).toFixed(1)}" stroke="#FFD43B" stroke-width="1.6" stroke-linecap="round"/>`}return s};
+const moonG=(cx,cy,r)=>`<path d="M${cx+r*.35} ${cy-r} a${r} ${r} 0 1 0 ${r*.75} ${r*1.55} a${r*.8} ${r*.8} 0 0 1 -${r*.75} -${r*1.55}z" fill="#E9E6C6"/>`;
+const ICON={
+  sunny:`<svg class="ic" viewBox="0 0 40 32">${sunG(20,16,6.5)}</svg>`,
+  clear:`<svg class="ic" viewBox="0 0 40 32">${moonG(17,16,8)}</svg>`,
+  partly:`<svg class="ic" viewBox="0 0 40 32">${sunG(14,13,5)}<path d="${CL}" transform="translate(5 2) scale(.95)" fill="#fff"/></svg>`,
+  partlyN:`<svg class="ic" viewBox="0 0 40 32">${moonG(10,11,6)}<path d="${CL}" transform="translate(5 2) scale(.95)" fill="#d9dde3"/></svg>`,
+  cloudy:`<svg class="ic" viewBox="0 0 40 32"><path d="${CL}" transform="translate(2 -1)" fill="#B7BCC3"/></svg>`,
+  rain:`<svg class="ic" viewBox="0 0 40 32"><path d="${CL}" transform="translate(2 -4)" fill="#5BC8EE"/><path d="M18 23l-1.4 4M22 23l-1.4 4" stroke="#0d4a63" stroke-width="1.6" stroke-linecap="round"/></svg>`
+};
+const NAME={sunny:'晴',clear:'晴',partly:'多云',partlyN:'多云',cloudy:'阴',rain:'雨'};
+
+/* ---------- sample forecast (example data, not live) ---------- */
+const CITIES={
+  st:{name:'汕头',tz:'Asia/Shanghai',days:[
+    {c:'partly',lo:23,hi:28,p:10},{c:'sunny',lo:22,hi:29,p:0},{c:'partly',lo:23,hi:28,p:10},
+    {c:'rain',lo:22,hi:26,p:70,rs:9,re:20},{c:'cloudy',lo:22,hi:27,p:30},{c:'sunny',lo:21,hi:28,p:0},{c:'partly',lo:22,hi:28,p:10}]},
+  gm:{name:'格明德',tz:'Europe/Berlin',days:[
+    {c:'rain',lo:8,hi:13,p:60,rs:15,re:23},{c:'cloudy',lo:7,hi:12,p:30},{c:'rain',lo:6,hi:11,p:80,rs:6,re:19},
+    {c:'partly',lo:4,hi:12,p:10},{c:'sunny',lo:3,hi:13,p:0},{c:'cloudy',lo:6,hi:12,p:20},{c:'rain',lo:7,hi:11,p:60,rs:11,re:22}]}
+};
+const WD=['周日','周一','周二','周三','周四','周五','周六'];
+const WMAP={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+function local(tz){
+  const p={};new Intl.DateTimeFormat('en-US',{timeZone:tz,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit',weekday:'short',hourCycle:'h23'})
+    .formatToParts(new Date()).forEach(x=>p[x.type]=x.value);
+  return {y:+p.year,m:+p.month,d:+p.day,h:+p.hour%24,min:+p.minute,wd:WMAP[p.weekday]};
+}
+function curve(h){if(h>=5&&h<=14)return .5-.5*Math.cos(Math.PI*(h-5)/9);const k=h<5?h+24:h;return .5+.5*Math.cos(Math.PI*(k-14)/15)}
+function hourCond(day,hh){
+  const night=hh<6||hh>=18;let c=day.c;
+  if(c==='rain'&&!(hh>=day.rs&&hh<=day.re))c='cloudy';
+  if(night&&c==='sunny')c='clear';if(night&&c==='partly')c='partlyN';
+  return {c,p:day.c==='rain'?(c==='rain'?day.p:Math.round(day.p*.4)):day.p};
+}
+function build(key){
+  const C=CITIES[key],L=local(C.tz);
+  const days=C.days.map((d,i)=>{const dt=new Date(Date.UTC(L.y,L.m-1,L.d+i));
+    return {...d,i,label:i===0?'今天':i===1?'明天':WD[dt.getUTCDay()],wd:WD[dt.getUTCDay()],md:`${dt.getUTCMonth()+1}月${dt.getUTCDate()}日`}});
+  const hours=[];
+  for(let k=0;k<36;k++){const abs=L.h+k,hh=abs%24,di=Math.floor(abs/24),day=days[Math.min(di,6)];
+    const {c,p}=hourCond(day,hh);const t=Math.round(day.lo+(day.hi-day.lo)*curve(hh)+(c==='rain'?-1:0));
+    hours.push({k,hh,di,c,p,t:Math.max(day.lo,Math.min(day.hi,t))})}
+  return {C,L,days,hours};
+}
+
+/* ---------- sky ---------- */
+const $=id=>document.getElementById(id);
+const sky={};['sun','moon','stars','grey','blue','rain'].forEach(k=>sky[k]=document.querySelector('.layer.'+k));
+const SKY={sunny:{sun:1,sx:0,sy:-56},partly:{sun:1,sx:-92,sy:-74,blue:.95},cloudy:{grey:1,blue:.3},
+  rain:{blue:1,rain:1},clear:{moon:1,stars:1},partlyN:{moon:.75,stars:.45,blue:.85}};
+function setSky(c){const s=SKY[c];for(const k in sky)sky[k].style.opacity=s[k]||0;
+  if('sx' in s){sky.sun.style.setProperty('--sx',s.sx);sky.sun.style.setProperty('--sy',s.sy)}}
+(function seed(){
+  const st=$('stars');for(let i=0;i<30;i++){const e=document.createElement('i');
+    e.style.left=`calc(var(--u) * ${Math.round(Math.random()*360-180)})`;e.style.top=`calc(var(--u) * ${Math.round(Math.random()*300-210)})`;
+    e.style.animationDelay=(-Math.random()*4)+'s';st.appendChild(e)}
+  const rf=$('rainfield');for(let i=0;i<8;i++){const e=document.createElement('div');e.className='s';e.style.left=(4+i*12+Math.random()*5)+'%';
+    e.style.animationDuration=(1.6+Math.random()*1)+'s';e.style.animationDelay=(-Math.random()*2)+'s';rf.appendChild(e)}
+})();
+
+/* ---------- fixed text containers: same box, content dissolves in place ---------- */
+const REDUCE=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function swap(line,html){
+  if(line._h===html)return;const first=line._h===undefined;line._h=html;
+  line.querySelectorAll('.v:not(.leave)').forEach(o=>{
+    if(first||REDUCE){o.remove();return}
+    o.classList.add('leave');setTimeout(()=>o.remove(),320);
+  });
+  const v=document.createElement('span');v.className='v'+(first||REDUCE?'':' enter');v.innerHTML=html;line.appendChild(v);
+  if(!first&&!REDUCE){void v.offsetWidth;v.classList.remove('enter')}
+}
+
+/* ---------- hero ---------- */
+let city='st',data;
+try{const s=localStorage.getItem('mami-city');if(s&&CITIES[s])city=s}catch(e){}
+function hero(mode,o){
+  let l1,big,ct,pop,sk;
+  if(mode==='now'){const d=data.days[0],n=data.hours[0];l1=`${d.lo} ～ ${d.hi} ℃`;big=`${n.t}<span class="unit">℃</span>`;ct=NAME[n.c];pop=n.p;sk=n.c}
+  else if(mode==='hour'){l1=(o.di>0?data.days[o.di].label+' ':'')+(o.k===0?'现在':o.hh+' 时');big=`${o.t}<span class="unit">℃</span>`;ct=NAME[o.c];pop=o.p;sk=o.c}
+  else{l1=o.label;big=`${o.lo}~${o.hi}<span class="unit">℃</span>`;ct=NAME[o.c];pop=o.p;sk=o.c}
+  swap($('l1'),l1);swap($('big'),big);
+  swap($('cond'),ct+(pop>=20?` <span class="pop">${pop}%</span>`:''));
+  setSky(sk);
+}
+
+/* ---------- lists ---------- */
+function render(soft){
+  data=build(city);const L=data.L;
+  let txt=`${data.C.name} · 当地 ${String(L.h).padStart(2,'0')}:${String(L.min).padStart(2,'0')}`;
+  if(city==='gm'){const S=local(CITIES.st.tz);txt+=` · 比汕头慢 ${Math.round((((S.h*60+S.min)-(L.h*60+L.min))%1440+1440)%1440/60)} 小时`}
+  $('local').textContent=txt;
+  $('hours').innerHTML=data.hours.map(o=>`<div class="h" tabindex="0" data-k="${o.k}">${o.hh===0&&o.k>0?`<span class="tag">${data.days[o.di].label}</span>`:''}<div class="lb">${o.k===0?'现在':o.hh+' 时'}</div>${ICON[o.c]}<div class="t">${o.t} ℃</div></div>`).join('');
+  $('dl').innerHTML=data.days.map(d=>`<div class="d" tabindex="0" data-i="${d.i}"><div class="lb">${d.label}</div>${ICON[d.c]}<div class="r">${d.lo} ～ ${d.hi} ℃</div></div>`).join('');
+  if(!soft){$('hours').scrollLeft=0;$('days').scrollTop=0}
+  fadeDays();
+  $('seg').dataset.on=city;
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.city===city));
+  if(!peek)hero('now');
+}
+
+/* ---------- per-row fade for the day list ---------- */
+function fadeDays(){
+  const c=$('days'),H=c.clientHeight||1;
+  c.querySelectorAll('.d').forEach(r=>{
+    const y=(r.offsetTop-c.scrollTop+r.offsetHeight/2)/H;
+    const f=y<.42?1:Math.max(.08,1-(y-.42)/.5*.92);
+    r.style.setProperty('--fade',f.toFixed(3));
+  });
+}
+let fadeRAF=0,fadeIdle=0;
+$('days').addEventListener('scroll',()=>{
+  $('days').classList.add('scrolling');clearTimeout(fadeIdle);fadeIdle=setTimeout(()=>$('days').classList.remove('scrolling'),160);
+  cancelAnimationFrame(fadeRAF);fadeRAF=requestAnimationFrame(fadeDays);
+},{passive:true});
+addEventListener('resize',fadeDays);
+
+/* ---------- long-press peek: the held item is untouched, everything else blurs, hero swaps content ---------- */
+const app=$('app');let peek=null,press=null,lastTouch=0;
+function select(el,first){
+  if(peek.el===el)return;
+  peek.el&&peek.el.classList.remove('on');peek.el=el;el.classList.add('on');
+  const isH=el.classList.contains('h');
+  hero(isH?'hour':'day',isH?data.hours[+el.dataset.k]:data.days[+el.dataset.i]);
+  try{navigator.vibrate&&navigator.vibrate(first?12:6)}catch(e){}
+}
+function begin(el){
+  
+  peek={kind:el.classList.contains('h')?'.h':'.d',el:null};
+  app.classList.add('peeking');select(el,true);
+}
+function end(){
+  if(press){clearTimeout(press.t);press.press=null}
+  if(!peek)return;
+  peek.el.classList.remove('on');
+  peek=null;app.classList.remove('peeking');hero('now');
+}
+function down(x,y,target){
+  const el=target.closest('.h,.d');if(!el)return;
+  
+  press={x,y,el,t:setTimeout(()=>{const e=press.el;press=null;begin(e)},420)};
+}
+function move(x,y){
+  if(peek){const t=document.elementFromPoint(x,y),el=t&&t.closest(peek.kind);if(el)select(el,false);return}
+  if(press&&Math.hypot(x-press.x,y-press.y)>9){clearTimeout(press.t);press.press=null}
+}
+document.addEventListener('touchstart',e=>{lastTouch=Date.now();if(e.touches.length===1){const t=e.touches[0];down(t.clientX,t.clientY,e.target)}else end()},{passive:true});
+document.addEventListener('touchmove',e=>{const t=e.touches[0];if(peek)e.preventDefault();move(t.clientX,t.clientY)},{passive:false});
+document.addEventListener('touchend',end);document.addEventListener('touchcancel',end);
+const mouse=()=>Date.now()-lastTouch>800;
+document.addEventListener('mousedown',e=>{if(mouse()&&e.button===0)down(e.clientX,e.clientY,e.target)});
+document.addEventListener('mousemove',e=>{if(mouse())move(e.clientX,e.clientY)});
+document.addEventListener('mouseup',()=>{if(mouse())end()});
+document.addEventListener('contextmenu',e=>{if(e.target.closest('.h,.d'))e.preventDefault()});
+$('hours').addEventListener('scroll',()=>{if(press){clearTimeout(press.t);press.press=null}},{passive:true});
+$('days').addEventListener('scroll',()=>{if(press){clearTimeout(press.t);press.press=null}},{passive:true});
+$('hours').addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){$('hours').scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+document.addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&!peek&&!e.repeat&&e.target.matches('.h,.d')){e.preventDefault();begin(e.target)}});
+document.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')end()});
+
+/* ---------- city switch: knob slides, hero numbers roll, lists cross-fade ---------- */
+$('seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.city===city)return;
+  city=b.dataset.city;try{localStorage.setItem('mami-city',city)}catch(_){}
+  $('seg').dataset.on=city;document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  app.classList.add('swapping');setTimeout(()=>{render();requestAnimationFrame(()=>app.classList.remove('swapping'))},REDUCE?0:220);
+});
+
+render();
+setInterval(()=>{if(!peek&&!press)render(true)},30000);
+</script>
+
+</body></html>
