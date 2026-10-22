@@ -221,7 +221,7 @@ body{box-sizing:border-box;overflow:hidden;padding-block:max(12px,env(safe-area-
     <div class="hd"><span class="tag" id="exTag">颈肩</span><button class="close" id="exClose">结束 ✕</button></div>
     <h2 id="exName">手臂前举过头</h2>
     <ol class="steps" id="exSteps"></ol>
-    <div class="safe">1 下 计入 · 2 下 换边 · 3 连 太快</div>
+    <div class="safe">1 计入 · 2 换边 · 3 连 太快 · 长 完成</div>
     <div class="note">
       <label for="noteIn">回来后做什么</label>
       <input id="noteIn" type="text" placeholder="回来后做什么" autocomplete="off">
@@ -356,9 +356,9 @@ function openEx(z){
   $('exTag').textContent=z.nm;$('exName').textContent=z.ex;$('exZone').textContent=z.nm;
   $('exSteps').innerHTML=z.steps.map(s=>`<li>${s}</li>`).join('');
   $('repT').textContent='/ '+z.reps;$('noteIn').value=S.note||'';
-  $('fallback').hidden=true;$('backCard').hidden=true;$('exStart').hidden=false;$('exStart').textContent='开始';
-  status('点开始','','');
-  updEx(0);document.body.style.overflow='hidden';$('sheet').hidden=false;
+  $('fallback').hidden=true;$('backCard').hidden=true;$('exStart').hidden=true;
+  status('','','');
+  updEx(0);document.body.style.overflow='hidden';$('sheet').hidden=false;startEx();
 }
 function closeEx(){
   stopMotion();$('sheet').hidden=true;document.body.style.overflow='';
@@ -388,17 +388,17 @@ function rep(){
 $('simRep').onclick=()=>{lastRepT=0;rep()};
 
 /* ---------- haptics: Android=vibrate, iPhone=switch tick + tone ---------- */
-const PAT={ok:[40],side:[30,190,30],slow:[40,40,40,40,40],go:[120],done:[500]};
+const PAT={ok:[90],side:[90,160,90],slow:[70,70,70,70,70],go:[220],done:[700]};
 const TICK={ok:[0],side:[0,220],slow:[0,70,140],go:[0,70],done:[0,130,260,390]};
-const TONE={ok:[[880,.06]],side:[[660,.05],[660,.05]],slow:[[220,.18]],go:[[520,.12]],done:[[660,.08],[880,.08],[1100,.22]]};
+const TONE={ok:[[1200,.07]],side:[[600,.09],[900,.09]],slow:[[180,.3,1]],go:[[520,.12]],done:[[660,.08],[880,.08],[1100,.22]]};
 const hasVib=typeof navigator.vibrate==='function';
 const sw=document.createElement('label');sw.style.cssText='position:fixed;left:-99px;top:0;opacity:0;pointer-events:none';
 sw.innerHTML='<input type="checkbox" switch>';document.body.appendChild(sw);
 function wav(tones){
-  const sr=16000,segs=tones.map(([f,d])=>[f,Math.floor(sr*d),Math.floor(sr*.05)]),n=segs.reduce((t,x)=>t+x[1]+x[2],0);
+  const sr=16000,segs=tones.map(([f,d,q])=>[f,Math.floor(sr*d),Math.floor(sr*.05),q]),n=segs.reduce((t,x)=>t+x[1]+x[2],0);
   const buf=new ArrayBuffer(44+n*2),v=new DataView(buf),w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};
   w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
-  let p=44;segs.forEach(([f,len,g])=>{for(let i=0;i<len;i++){v.setInt16(p,Math.sin(2*Math.PI*f*i/sr)*Math.min(1,i/80,(len-i)/80)*16000,true);p+=2}p+=g*2});
+  let p=44;segs.forEach(([f,len,g,q])=>{for(let i=0;i<len;i++){v.setInt16(p,(q?.6*Math.sign(Math.sin(2*Math.PI*f*i/sr)):Math.sin(2*Math.PI*f*i/sr))*Math.min(1,i/80,(len-i)/80)*16000,true);p+=2}p+=g*2});
   return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
 }
 const AU={};Object.keys(TONE).forEach(k=>{const a=new Audio(wav(TONE[k]));a.preload='auto';AU[k]=a});
@@ -409,6 +409,7 @@ function buzz(k){
   const a=AU[k];if(a){try{a.currentTime=0;a.play().catch(()=>{})}catch(e){}}
 }
 let lastSlow=0,armAt=0;
+$('sp1').parentNode.previousElementSibling.onclick=()=>{buzz('ok');setTimeout(()=>buzz('side'),900);setTimeout(()=>buzz('slow'),2200);setTimeout(()=>buzz('done'),3400)};
 function slow(){const n=performance.now();if(n-lastSlow<900)return;lastSlow=n;buzz('slow');status('慢一点','slow','')}
 
 /* ---------- motion detection ---------- */
@@ -417,15 +418,18 @@ const v3={dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],len:a=>Math.hypot(a[0],a[1],a
 const deg=r=>r*180/Math.PI;
 function ang(a,b){return deg(Math.acos(Math.max(-1,Math.min(1,v3.dot(a,b)))))}
 const DET={
-  raise(){return{base:null,up:false,lock:false,t0:0,update(s){
-    if(!this.base){this.base=s.gn.slice();return 0}
+  raise(){return{base:null,prev:null,still:0,up:false,lock:false,t0:0,update(s){
+    if(!this.base){this.base=s.gn.slice();this.prev=s.gn.slice();return 0}
+    const sp=ang(s.gn,this.prev)/s.dt;this.prev=s.gn.slice();
+    this.still=sp<15?this.still+s.dt:0;
+    if(this.still>0.5&&!this.up){this.base=s.gn.slice();this.lock=false;this.t0=0}
     const a=ang(s.gn,this.base);
     if(a<20)this.t0=0;else if(!this.t0)this.t0=s.now;
     if(a<35)this.lock=false;
     if(!this.up&&!this.lock&&a>110){
       if(s.now-this.t0<800){this.lock=true;slow()}
-      else{this.up=true;buzz('side');status('放下','','')}
-    } else if(this.up&&a<35){this.up=false;rep()}
+      else{this.up=true}
+    } else if(this.up&&a<50){this.up=false;rep()}
     return this.up?0.5+0.5*Math.min(1,(110-a)/75):0.5*Math.min(1,a/110);
   }}},
   circle(){return{prev:null,A:[0,0,0],acc:0,idle:0,update(s){
@@ -448,7 +452,7 @@ const DET={
     if(Math.abs(rate)>6)this.yaw+=rate*s.dt;
     const y=this.yaw;
     const reverse=()=>{const amp=Math.abs(this.ext-this.turn),dur=s.now-this.tT;
-      if(amp>55&&dur>450){this.half++;if(this.half%2===0)rep();else{buzz('side');status('收回','','')}}
+      if(amp>55&&dur>450){this.half++;if(this.half%2===0)rep();else{buzz('side');status('换边','','')}}
       else if(amp>55)slow();
       this.turn=this.ext;this.tT=s.now;this.dir=-this.dir;this.ext=y};
     if(this.dir===0){if(!this.tT)this.tT=s.now;if(y-this.turn>10){this.dir=1;this.ext=y}else if(y-this.turn<-10){this.dir=-1;this.ext=y}}
@@ -480,17 +484,15 @@ function onMotion(e){
   if(cur)updEx(prog);
 }
 function stopMotion(){running=false;armAt=0;det=null;window.removeEventListener('devicemotion',onMotion)}
-$('exStart').onclick=async()=>{
+async function startEx(){
   if(!cur)return;unlock();
   try{if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function'){
     const r=await DeviceMotionEvent.requestPermission();if(r!=='granted')throw 0}}catch(e){}
   window.removeEventListener('devicemotion',onMotion);
-  M.g=null;M.lastT=0;det=null;gotMotion=false;running=true;lastRepT=0;lastSlow=0;reps=0;updEx(0);
-  armAt=performance.now()+2500;
+  M.g=null;M.lastT=0;det=DET[cur.det]();gotMotion=false;running=true;lastRepT=0;lastSlow=0;reps=0;updEx(0);
   window.addEventListener('devicemotion',onMotion);
-  $('exStart').textContent='重来';status('准备','','');
-  setTimeout(()=>{if(running&&!gotMotion){$('fallback').hidden=false;status('无传感器','slow','')}},1500);
-};
+  setTimeout(()=>{if(running&&!gotMotion){$('fallback').hidden=false;status('','','')}},1500);
+}
 
 render();
 })();
