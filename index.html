@@ -123,11 +123,24 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .back span{font-size:12px;color:var(--muted);display:block}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:360px){.stage{grid-template-columns:96px 1fr}.meter{grid-template-columns:1fr;justify-items:center;text-align:center}}
+
+html,body{height:100%}
+body{box-sizing:border-box;overflow:hidden;padding-block:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-bottom,0px))}
+.page{height:100%;gap:10px}
+.stage{flex:1;min-height:0;grid-template-rows:minmax(0,1fr);align-items:stretch}
+.fig{height:100%;min-height:0}
+.zones{justify-content:center}
+.zone.hot{background:var(--pain-soft)}
+.clock{padding-bottom:8px}
+.foot{border:0;padding:0;justify-content:flex-end}
+.alert,.zone .ex,.sec,.clock .lab,.need b,#footNote,.sheet .hd .tag,.steps,.sheet .sub,.note label{display:none!important}
+.sheet .in{gap:12px}.sheet h2{font-size:28px}
+.ring{width:120px;height:120px}.meter{grid-template-columns:120px 1fr}
 </style>
 
 <div class="page">
   <div class="top">
-    <div class="brand">Klimu<small>别硬撑</small></div>
+    <div class="brand">Klimu</div>
     <div class="speed" role="group" aria-label="时间速度">
       <button id="sp1" aria-pressed="false">实时</button>
       <button id="sp60" aria-pressed="true">演示 ×60</button>
@@ -199,7 +212,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 
   <div class="foot">
     <span id="footNote">示例状态：已专注 48 分钟</span>
-    <button id="reset">清零重来</button>
+    <button id="reset">清零</button>
   </div>
 </div>
 
@@ -208,10 +221,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
     <div class="hd"><span class="tag" id="exTag">颈肩</span><button class="close" id="exClose">结束 ✕</button></div>
     <h2 id="exName">手臂前举过头</h2>
     <ol class="steps" id="exSteps"></ol>
-    <div class="safe">震 1 下＝算 1 次 · 2 下＝换边 · 连震 3 下＝太快</div>
+    <div class="safe">1 下 计入 · 2 下 换边 · 3 连 太快</div>
     <div class="note">
       <label for="noteIn">回来后做什么</label>
-      <input id="noteIn" type="text" placeholder="一句话" autocomplete="off">
+      <input id="noteIn" type="text" placeholder="回来后做什么" autocomplete="off">
     </div>
     <div class="meter">
       <div class="ring">
@@ -274,7 +287,7 @@ ZONES.forEach(z=>{
   const b=document.createElement('button');b.className='zone';b.id='z-'+z.id;
   b.innerHTML=`<span class="nm">${z.nm}</span><span class="pc"></span><span class="bar"><i></i></span><span class="ex">去做：<u>${z.ex}</u></span>`;
   b.onclick=()=>openEx(z);$('zones').appendChild(b);
-  zoneEls[z.id]={pc:b.querySelector('.pc'),bar:b.querySelector('.bar i')};
+  zoneEls[z.id]={b,pc:b.querySelector('.pc'),bar:b.querySelector('.bar i')};
 });
 const needEls={};
 NEEDS.forEach(n=>{
@@ -306,7 +319,7 @@ function render(){
   let max=0,maxZ=null;
   ZONES.forEach(z=>{
     const p=S.pain[z.id];if(p>max){max=p;maxZ=z}
-    const e=zoneEls[z.id];e.pc.textContent=Math.round(p)+'%';e.pc.classList.toggle('hot',p>=60);e.bar.style.width=p+'%';
+    const e=zoneEls[z.id];e.pc.textContent=Math.round(p)+'%';e.pc.classList.toggle('hot',p>=60);e.bar.style.width=p+'%';e.b.classList.toggle('hot',p>=60);
     const op=Math.min(1,p/100*1.1);
     (z.id==='arms'?['g-arms-l','g-arms-r']:['g-'+z.id]).forEach(g=>$(g).setAttribute('opacity',op.toFixed(2)));
     const s=$('s-'+z.id);s.setAttribute('opacity',p<35?0:Math.min(1,(p-35)/40).toFixed(2));s.classList.toggle('live',p>=70);
@@ -342,7 +355,7 @@ function openEx(z){
   cur=z;reps=0;startPain=Math.max(1,S.pain[z.id]);running=false;
   $('exTag').textContent=z.nm;$('exName').textContent=z.ex;$('exZone').textContent=z.nm;
   $('exSteps').innerHTML=z.steps.map(s=>`<li>${s}</li>`).join('');
-  $('repT').textContent='/ '+z.reps+' 次';$('noteIn').value=S.note||'';
+  $('repT').textContent='/ '+z.reps;$('noteIn').value=S.note||'';
   $('fallback').hidden=true;$('backCard').hidden=true;$('exStart').hidden=false;$('exStart').textContent='开始';
   status('点开始','','');
   updEx(0);document.body.style.overflow='hidden';$('sheet').hidden=false;
@@ -369,7 +382,7 @@ function rep(){
     S.pain[cur.id]=0;buzz('done');status('完成','done','');
     stopMotion();happyUntil=performance.now()+2500;$('exStart').hidden=true;
     const n=$('noteIn').value.trim();if(n){$('backTxt').textContent=n;$('backCard').hidden=false}
-  } else{buzz('ok');status(`${reps} / ${cur.reps}`,'','')}
+  } else{buzz('ok');status('','','')}
   updEx(0);render();
 }
 $('simRep').onclick=()=>{lastRepT=0;rep()};
@@ -381,12 +394,19 @@ const TONE={ok:[[880,.06]],side:[[660,.05],[660,.05]],slow:[[220,.18]],go:[[520,
 const hasVib=typeof navigator.vibrate==='function';
 const sw=document.createElement('label');sw.style.cssText='position:fixed;left:-99px;top:0;opacity:0;pointer-events:none';
 sw.innerHTML='<input type="checkbox" switch>';document.body.appendChild(sw);
-let ac=null;
-function unlock(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}}
+function wav(tones){
+  const sr=16000,segs=tones.map(([f,d])=>[f,Math.floor(sr*d),Math.floor(sr*.05)]),n=segs.reduce((t,x)=>t+x[1]+x[2],0);
+  const buf=new ArrayBuffer(44+n*2),v=new DataView(buf),w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};
+  w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  let p=44;segs.forEach(([f,len,g])=>{for(let i=0;i<len;i++){v.setInt16(p,Math.sin(2*Math.PI*f*i/sr)*Math.min(1,i/80,(len-i)/80)*16000,true);p+=2}p+=g*2});
+  return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
+}
+const AU={};Object.keys(TONE).forEach(k=>{const a=new Audio(wav(TONE[k]));a.preload='auto';AU[k]=a});
+function unlock(){Object.values(AU).forEach(a=>{a.muted=true;a.play().then(()=>{a.pause();a.currentTime=0;a.muted=false}).catch(()=>{a.muted=false})})}
 function buzz(k){
   if(hasVib){try{navigator.vibrate(PAT[k])}catch(e){}return}
   TICK[k].forEach(t=>setTimeout(()=>{try{sw.click()}catch(e){}},t));
-  if(ac){let at=ac.currentTime;TONE[k].forEach(([f,d])=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.setValueAtTime(.15,at);g.gain.exponentialRampToValueAtTime(.001,at+d);o.connect(g);g.connect(ac.destination);o.start(at);o.stop(at+d);at+=d+.05})}
+  const a=AU[k];if(a){try{a.currentTime=0;a.play().catch(()=>{})}catch(e){}}
 }
 let lastSlow=0,armAt=0;
 function slow(){const n=performance.now();if(n-lastSlow<900)return;lastSlow=n;buzz('slow');status('慢一点','slow','')}
